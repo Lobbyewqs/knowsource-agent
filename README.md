@@ -2,7 +2,7 @@
 
 基于 DeepSeek 与混合检索的中文知识库问答助手。将 Markdown、TXT、PDF 和 Word 文档转为可检索的知识，通过多轮查询改写、向量召回、BM25 和来源引用，辅助查阅专业资料。
 
-> 课程实践项目，当前提供命令行交互。属于固定工作流的 RAG 助手，不包含自主规划、外部工具调用或网页界面。
+> 课程实践项目，提供本地 Web 界面和命令行交互。属于固定工作流的 RAG 助手，不包含自主规划、外部工具调用。
 
 ## 功能与流程
 
@@ -30,8 +30,12 @@ python -m pip install -r requirements.txt
 Copy-Item .env.example .env
 # 编辑 .env，填写自己的 DEEPSEEK_API_KEY
 python build_index.py demo
-python chat.py demo
+python web_app.py
 ```
+
+浏览器打开 http://127.0.0.1:8000，选择知识库并输入问题。首次提问如果没有索引，会自动构建；首次加载向量模型可能需要较长时间。切换知识库会保留各自当前页面的对话，新建对话会清空当前知识库对话；刷新页面后对话不会保留。服务只监听本机，不应直接暴露到公网。
+
+命令行仍可使用 `python chat.py demo`。
 
 设备库：`python chat.py equipment`。输入 `q`、`quit` 或 `exit` 结束。
 
@@ -59,6 +63,7 @@ python -m compileall -q config.py utils.py build_index.py chat.py docu.py
 | 文件 | 用途 |
 |---|---|
 | `build_index.py` | 文档导入、切片、版本化索引 |
+| `web_app.py`、`web/` | 本地 Web 服务与问答界面 |
 | `chat.py` | 多轮改写、混合检索、重排、引用问答 |
 | `config.py` | 环境配置与知识库路径 |
 | `utils.py` | 中文文本清洗和分词 |
