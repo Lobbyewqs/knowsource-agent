@@ -62,6 +62,20 @@ async function init() {
   } catch { title.textContent = '无法连接本地服务'; hint.textContent = '请检查服务是否启动，然后刷新页面。'; send.disabled = true; }
 }
 
+async function refreshIndexStatus() {
+  try {
+    const response = await fetch('/api/libraries');
+    if (!response.ok) return;
+    const {libraries: items} = await response.json();
+    document.querySelectorAll('.library').forEach(button => {
+      const item = items.find(entry => entry.name === button.dataset.name);
+      if (item) button.querySelector('small').textContent = item.indexed ? '已索引' : '待索引';
+    });
+  } catch {
+    // Keep the last known status if the local service is unavailable.
+  }
+}
+
 document.querySelector('#clear').onclick = () => { if (!current || busy) return; conversations.set(current, {entries: [], history: []}); render(); question.focus(); };
 document.querySelectorAll('[data-question]').forEach(button => button.onclick = () => { question.value = button.dataset.question; question.focus(); });
 question.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); document.querySelector('#chat-form').requestSubmit(); } });
@@ -77,6 +91,6 @@ document.querySelector('#chat-form').addEventListener('submit', async event => {
     conversation.entries.push({role:'assistant', text:result.answer, sources:result.sources});
     conversation.history.push(`用户：${text}\n助手：${result.answer}`); conversation.history = conversation.history.slice(-3);
   } catch (error) { conversation.entries.push({role:'assistant', text:`未能完成请求：${error.message}`}); }
-  finally { busy = false; hint.textContent = '回答基于当前知识库内容'; render(); }
+  finally { busy = false; hint.textContent = '回答基于当前知识库内容'; render(); refreshIndexStatus(); }
 });
 init();
